@@ -2,10 +2,10 @@ FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 COPY . .
 
-Make Maven Wrapper executable if present; ignore error if absent
+#Make Maven Wrapper executable if present; ignore error if absent
 RUN chmod +x mvnw || true
 
-Build with Maven Wrapper; if missing, fall back to system Maven
+#Build with Maven Wrapper; if missing, fall back to system Maven
 RUN ./mvnw -q -DskipTests package || mvn -q -DskipTests package
 
 FROM eclipse-temurin:21-jre

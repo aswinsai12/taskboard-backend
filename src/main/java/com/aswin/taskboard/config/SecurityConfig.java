@@ -11,6 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
@@ -25,7 +26,8 @@ public class SecurityConfig {
       .authorizeHttpRequests(auth -> auth
         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        .requestMatchers("/", "/error", "/actuator/health", "/auth/register", "/auth/login", "/h2-console/**").permitAll()
+        .requestMatchers("/", "/error", "/actuator/health", "/actuator/mappings",
+                         "/auth/**", "/h2-console/**", "/tasks/**").permitAll()
         .anyRequest().authenticated()
       )
       .headers(h -> h.frameOptions(f -> f.disable()));
@@ -35,7 +37,6 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration cfg = new CorsConfiguration();
-
     String fe = System.getenv("FRONTEND_ORIGIN");
     if (fe != null && !fe.isBlank()) {
       cfg.setAllowedOriginPatterns(List.of(fe));
@@ -47,7 +48,6 @@ public class SecurityConfig {
         "https://*.onrender.com"
       ));
     }
-
     cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
     cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
     cfg.setExposedHeaders(List.of("Authorization","Location"));

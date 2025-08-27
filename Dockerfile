@@ -1,11 +1,26 @@
-FROM eclipse-temurin:21-jdk AS build
+# ---------- Build stage ----------
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY . .
-RUN chmod +x mvnw || true
-RUN ./mvnw -q -DskipTests package || mvn -q -DskipTests package
 
-FROM eclipse-temurin:21-jre
+# Leverage cache for deps
+COPY pom.xml .
+RUN mvn -q -DskipTests dependency:go-offline
+
+# Copy sources and build
+COPY src ./src
+RUN mvn -q -DskipTests package
+
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app
-COPY --from=build /app/target/*.jar /app/app.jar
+
+# Copy the fat jar
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose HTTP port
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+# Optional runtime opts via JAVA_OPTS
+ENV JAVA_OPTS=""
+
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]

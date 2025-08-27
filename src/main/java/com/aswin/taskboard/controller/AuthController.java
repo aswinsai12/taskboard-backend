@@ -12,29 +12,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+  @Autowired
+  private BCryptPasswordEncoder passwordEncoder;
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            return ResponseEntity.badRequest().body("Username already taken");
-        }
-        // Hash password before saving
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
+  @PostMapping("/register")
+  public ResponseEntity<String> register(@RequestBody User user) {
+    if (userRepository.findByUsername(user.getUsername()) != null) {
+      return ResponseEntity.badRequest().body("Username already taken");
     }
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    userRepository.save(user);
+    return ResponseEntity.ok("User registered successfully");
+  }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User login) {
-        User user = userRepository.findByUsername(login.getUsername());
-        if (user == null || !passwordEncoder.matches(login.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
-        return ResponseEntity.ok("Login successful");
+  @PostMapping("/login")
+  public ResponseEntity<String> login(@RequestBody User login) {
+    User user = userRepository.findByUsername(login.getUsername());
+    if (user == null || !passwordEncoder.matches(login.getPassword(), user.getPassword())) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
     }
+    return ResponseEntity.ok("Login successful");
+  }
 }
